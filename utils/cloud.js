@@ -2,15 +2,13 @@ import fs from 'fs';
 import config from 'config';
 import aws from 'aws-sdk';
 
-const awsConfig = config.get('aws');
-
 const s3 = new aws.S3({
   params: {
-    accessKeyId: awsConfig.iam.key,
-    secretAccessKey: awsConfig.iam.secret,
+    accessKeyId: config.get('aws.iam.key'),
+    secretAccessKey: config.get('aws.iam.secret'),
 
-    Bucket: awsConfig.s3.bucket,
-    region: awsConfig.region,
+    Bucket: config.get('aws.s3.bucket'),
+    region: config.get('aws.region'),
   },
   signatureVersion: 'v4',
 });
@@ -100,7 +98,7 @@ export function check(source) {
  * @return {Promise}
  */
 export function copy(source, destination) {
-  source = `${awsConfig.s3.bucket}/${source}`; // eslint-disable-line no-param-reassign
+  source = `${config.get('aws.s3.bucket')}/${source}`; // eslint-disable-line no-param-reassign
 
   return s3
     .copyObject({

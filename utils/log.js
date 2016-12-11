@@ -2,8 +2,6 @@ import config from 'config';
 import moment from 'moment';
 import winston from 'winston';
 
-const configLog = config.get('log');
-
 // { error: 0, warn: 1, info: 2, verbose: 3, debug: 4, silly: 5 }
 
 function timestamp() {
@@ -16,7 +14,7 @@ function loggerFactory(label) {
       new winston.transports.Console({
         json: true,
         label,
-        level: label === 'server' ? 'warn' : configLog.level,
+        level: label === 'server' ? 'warn' : config.get('log.level'),
         timestamp,
       }),
     ],
