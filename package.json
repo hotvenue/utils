@@ -4,7 +4,10 @@
   "description": "A bunch of utilities for our applications",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "eslint": "eslint .",
+    "check": "npm run eslint",
+    "pretest": "npm run check",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -21,5 +24,18 @@
   "bugs": {
     "url": "https://github.com/hotvenue/utils/issues"
   },
-  "homepage": "https://github.com/hotvenue/utils#readme"
+  "homepage": "https://github.com/hotvenue/utils#readme",
+  "dependencies": {
+    "config": "^1.24.0"
+  },
+  "devDependencies": {
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-airbnb": "^2.1.1",
+    "eslint": "^3.12.0",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.8.0",
+    "jest": "^17.0.3"
+  }
 }
