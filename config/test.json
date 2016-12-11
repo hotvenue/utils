@@ -1,0 +1,11 @@
+{
+  "log": {
+    "level": "error"
+  },
+
+  "aws": {
+    "s3": {
+      "bucket": "hotvenue-test"
+    }
+  }
+}
