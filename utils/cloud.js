@@ -3,14 +3,13 @@ import config from 'config';
 import aws from 'aws-sdk';
 
 const s3 = new aws.S3({
-  params: {
-    accessKeyId: config.get('aws.iam.key'),
-    secretAccessKey: config.get('aws.iam.secret'),
-
-    Bucket: config.get('aws.s3.bucket'),
-    region: config.get('aws.region'),
-  },
+  accessKeyId: config.get('aws.iam.key'),
+  secretAccessKey: config.get('aws.iam.secret'),
+  region: config.get('aws.region'),
   signatureVersion: 'v4',
+  params: {
+    Bucket: config.get('aws.s3.bucket'),
+  },
 });
 
 /**
