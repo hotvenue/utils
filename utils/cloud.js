@@ -12,6 +12,12 @@ const s3 = new aws.S3({
   },
 });
 
+const sqs = new aws.SQS({
+  accessKeyId: config.get('aws.iam.key'),
+  secretAccessKey: config.get('aws.iam.secret'),
+  region: config.get('aws.region'),
+});
+
 /**
  * Upload a file to a remote location
  *
@@ -103,6 +109,65 @@ export function copy(source, destination) {
     .copyObject({
       Key: destination,
       CopySource: source,
+    })
+    .promise();
+}
+
+function createQueueUrl(name) {
+  return `https://sqs.${config.get('aws.region')}.amazonaws.com/${config.get('aws.accountId')}/${name}`;
+}
+
+/**
+ * Receives messages from the queue
+ *
+ * @param {string} queue The name of the queue
+ * @param {int}    max   Max number of messages to be received
+ * @returns {Promise<SQS.Types.ReceiveMessageResult>}
+ */
+export function receiveMessage(queue, max = 1) {
+  return sqs
+    .receiveMessage({
+      QueueUrl: createQueueUrl(queue),
+      MaxNumberOfMessages: max,
+    })
+    .promise()
+    .then(data => (data.Messages || []).map(message => ({
+      ...message,
+      deleteMessage: () => sqs.deleteMessage({
+        QueueUrl: createQueueUrl(queue),
+        ReceiptHandle: message.ReceiptHandle,
+      }).promise(),
+    })));
+}
+
+/**
+ * Sends a message to the queue
+ *
+ * @param {string} queue      The name of the queue
+ * @param {string} body       The body of the message
+ * @param {object} attributes The attributes of the message
+ * @returns {Promise<SQS.Types.SendMessageResult>}
+ */
+export function sendMessage(queue, body, attributes = null) {
+  return sqs
+    .sendMessage({
+      QueueUrl: createQueueUrl(queue),
+      MessageBody: body,
+      MessageAttributes: attributes,
+    })
+    .promise();
+}
+
+/**
+ * Purges a queue
+ *
+ * @param {string} queue The name of the queue
+ * @returns {Promise<{}>}
+ */
+export function purgeQueue(queue) {
+  return sqs
+    .purgeQueue({
+      QueueUrl: createQueueUrl(queue),
     })
     .promise();
 }

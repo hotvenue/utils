@@ -1,7 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-import { upload, download, destroy, check, copy } from '../../utils/cloud';
+import {
+  upload, download, destroy, check, copy,
+  sendMessage, receiveMessage, purgeQueue,
+} from '../../utils/cloud';
 
 describe('Cloud', () => {
   describe('S3', () => {
@@ -57,5 +60,47 @@ describe('Cloud', () => {
 
     it('should copy a file', () => copy(filename1, filename2)
       .then(() => check(filename2)));
+  });
+
+  describe('SQS', () => {
+    const queue = 'test';
+
+    beforeEach(() => Promise.all([
+      sendMessage(queue, 'Message 1'),
+      sendMessage(queue, 'Message 2'),
+    ]));
+
+    afterEach(() => receiveMessage(queue, 10)
+      .then((messages) => {
+        if (typeof messages === 'undefined') {
+          return true;
+        }
+
+        return Promise.all(messages.map(message => message.deleteMessage()));
+      }));
+
+    afterAll(() => purgeQueue(queue));
+
+    it('should send a simple message', () => sendMessage(queue, 'test message')
+      .then(data => expect(data).toBeDefined()));
+
+    it('should send a complex message', () => sendMessage(queue, 'test message', {
+      attr: {
+        DataType: 'String',
+        StringValue: 'value of attribute 1',
+      },
+    })
+      .then(data => expect(data).toBeDefined()));
+
+    it('should receive a simple message', () => receiveMessage(queue)
+      .then((messages) => {
+        expect(messages.length).not.toBeUndefined();
+
+        return Promise.all(messages.map(message => message.deleteMessage()));
+      }));
+
+    it('should purge the queue', () => purgeQueue(queue)
+      .then(() => receiveMessage(queue))
+      .then(messages => expect(messages).toHaveLength(0)));
   });
 });
